@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CrowdLens | Emergency Portal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              primary: "#135BEC",
+              "background-dark": "#0D1117",
+              "card-dark": "#161B22",
+              "input-dark": "#21262D",
+              "border-dark": "#30363D",
+              "text-white": "#E6EDF3",
+              "text-slate": "#8B949E",
+              "accent-red": "#F85149",
+              "accent-green": "#3FB950",
+              "accent-blue": "#58A6FF",
+            },
+          },
+        },
+      };
+    </script>
+
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=JetBrains+Mono:wght@500&display=swap");
+
+      body {
+        font-family: "Plus Jakarta Sans", sans-serif;
+        background-color: #0d1117;
+        color: #e6edf3;
+      }
+
+      .emergency-glow {
+        box-shadow: 0 0 20px rgba(248, 81, 73, 0.15);
+      }
+
+      .pulse-red {
+        animation: pulse-red-animation 2s infinite;
+      }
+
+      @keyframes pulse-red-animation {
+        0% {
+          box-shadow: 0 0 0 0 rgba(248, 81, 73, 0.4);
+        }
+        70% {
+          box-shadow: 0 0 0 15px rgba(248, 81, 73, 0);
+        }
+        100% {
+          box-shadow: 0 0 0 0 rgba(248, 81, 73, 0);
+        }
+      }
+    </style>
+  </head>
+  <script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getFirestore, addDoc, collection, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyB7FhvYdKw6kqqo66KwSlUHbGVrcr7Z5Sw",
+    authDomain: "crowdlens-ai.firebaseapp.com",
+    projectId: "crowdlens-ai",
+    storageBucket: "crowdlens-ai.firebasestorage.app",
+    messagingSenderId: "804844724116",
+    appId: "1:804844724116:web:e6c5c656c529c4edbd7981"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  // Save SOS alert to Firebase
+  async function saveSOS(message) {
+    try {
+      await addDoc(collection(db, "sos_alerts"), {
+        message: message,
+        location: "Current Location",
+        time: serverTimestamp()
+      });
+    } catch (e) {
+      console.error("Error saving SOS:", e);
+    }
+  }
+
+  // This function is already called by your buttons
+  window.sendAlert = function (message) {
+    saveSOS(message);
+    alert("🚨 SOS sent successfully!");
+  };
+</script>
+
+  <body class="p-4 md:p-8 min-h-screen flex items-center justify-center">
+    <main class="max-w-2xl w-full">
+      <!-- Header -->
+      <div class="flex items-center justify-between mb-8">
+        <a
+          href="home.html"
+          class="flex items-center gap-2 text-text-slate hover:text-white transition-colors font-bold text-xs uppercase tracking-widest"
+        >
+          <i class="fas fa-arrow-left"></i>
+          Exit Portal
+        </a>
+        <div
+          class="flex items-center gap-2 bg-accent-red/10 px-3 py-1 rounded-full border border-accent-red/20"
+        >
+          <span class="w-2 h-2 bg-accent-red rounded-full animate-pulse"></span>
+          <span
+            class="text-[10px] font-bold text-accent-red uppercase tracking-tighter"
+            >Live SOS Mode</span
+          >
+        </div>
+      </div>
+
+      <div
+        class="bg-card-dark rounded-[2.5rem] border border-border-dark overflow-hidden shadow-2xl emergency-glow"
+      >
+        <!-- Active Alert Banner -->
+        <div class="bg-accent-red p-6 text-center">
+          <i class="fas fa-triangle-exclamation text-3xl text-white mb-2"></i>
+          <h2 class="text-xl font-extrabold text-white tracking-tight">
+            CRISIS PROTOCOL ACTIVE
+          </h2>
+          <p class="text-white/80 text-xs font-medium">
+            Your location is being shared with emergency responders.
+          </p>
+        </div>
+
+        <div class="p-8 space-y-10">
+          <!-- Section 1: Quick Broadcast -->
+          <section>
+            <h3
+              class="text-[10px] font-bold text-text-slate uppercase tracking-[0.2em] mb-6 flex items-center gap-2"
+            >
+              <span class="w-4 h-[1px] bg-border-dark"></span>
+              Status Broadcast
+            </h3>
+
+            <div class="grid grid-cols-1 gap-4">
+              <!-- Safe Button -->
+              <button
+                onclick="sendAlert('I am safe.')"
+                class="w-full flex items-center justify-between p-6 bg-accent-green/5 border border-accent-green/20 hover:bg-accent-green/10 rounded-3xl transition-all group"
+              >
+                <div class="flex items-center gap-5">
+                  <div
+                    class="w-14 h-14 rounded-2xl bg-accent-green/20 flex items-center justify-center text-accent-green text-2xl"
+                  >
+                    <i class="fas fa-shield-check"></i>
+                  </div>
+                  <div class="text-left">
+                    <span class="block text-lg font-bold text-accent-green"
+                      >SIGNAL SAFE</span
+                    >
+                    <span class="text-xs text-text-slate"
+                      >Notify contacts that you are secure.</span
+                    >
+                  </div>
+                </div>
+                <i
+                  class="fas fa-paper-plane text-accent-green group-hover:translate-x-1 transition-transform"
+                ></i>
+              </button>
+
+              <!-- Unsafe Button -->
+              <button
+                onclick="sendAlert('Path is unsafe!')"
+                class="w-full flex items-center justify-between p-6 bg-accent-red/5 border border-accent-red/20 hover:bg-accent-red/10 rounded-3xl transition-all group pulse-red"
+              >
+                <div class="flex items-center gap-5">
+                  <div
+                    class="w-14 h-14 rounded-2xl bg-accent-red/20 flex items-center justify-center text-accent-red text-2xl"
+                  >
+                    <i class="fas fa-route-interrupted"></i>
+                  </div>
+                  <div class="text-left">
+                    <span
+                      class="block text-lg font-bold text-accent-red uppercase"
+                      >Path Unsafe</span
+                    >
+                    <span class="text-xs text-text-slate"
+                      >Report dangerous route conditions.</span
+                    >
+                  </div>
+                </div>
+                <i
+                  class="fas fa-warning text-accent-red group-hover:translate-x-1 transition-transform"
+                ></i>
+              </button>
+            </div>
+          </section>
+
+          <!-- Section 2: Contact List -->
+          <section>
+            <h3
+              class="text-[10px] font-bold text-text-slate uppercase tracking-[0.2em] mb-6 flex items-center gap-2"
+            >
+              <span class="w-4 h-[1px] bg-border-dark"></span>
+              Priority Rescue Contacts
+            </h3>
+
+            <div class="space-y-3">
+              <div
+                class="flex items-center justify-between p-4 bg-input-dark/30 rounded-2xl border border-border-dark group hover:border-accent-blue transition-all"
+              >
+                <div class="flex items-center gap-4">
+                  <div
+                    class="w-10 h-10 rounded-full bg-accent-blue/10 flex items-center justify-center text-accent-blue font-bold text-xs tracking-tighter"
+                  >
+                    100
+                  </div>
+                  <div>
+                    <p class="text-sm font-bold text-white">
+                      Police Control Room
+                    </p>
+                    <p class="text-[10px] text-text-slate uppercase">
+                      Emergency Dispatch
+                    </p>
+                  </div>
+                </div>
+                <button
+                  class="w-10 h-10 rounded-xl bg-accent-blue/10 text-accent-blue hover:bg-accent-blue hover:text-white transition-all"
+                >
+                  <i class="fas fa-phone"></i>
+                </button>
+              </div>
+
+              <div
+                class="flex items-center justify-between p-4 bg-input-dark/30 rounded-2xl border border-border-dark group hover:border-accent-blue transition-all"
+              >
+                <div class="flex items-center gap-4">
+                  <div
+                    class="w-10 h-10 rounded-full bg-accent-green/10 flex items-center justify-center text-accent-green font-bold text-xs tracking-tighter"
+                  >
+                    102
+                  </div>
+                  <div>
+                    <p class="text-sm font-bold text-white">
+                      Ambulance / Medical
+                    </p>
+                    <p class="text-[10px] text-text-slate uppercase">
+                      Critical Support
+                    </p>
+                  </div>
+                </div>
+                <button
+                  class="w-10 h-10 rounded-xl bg-accent-blue/10 text-accent-blue hover:bg-accent-blue hover:text-white transition-all"
+                >
+                  <i class="fas fa-phone"></i>
+                </button>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <!-- Geo-Tagging Footer -->
+        <div
+          class="p-6 bg-input-dark/30 border-t border-border-dark flex items-center justify-center gap-4"
+        >
+          <div class="flex items-center gap-2">
+            <i class="fas fa-location-dot text-accent-blue animate-bounce"></i>
+            <span
+              class="font-mono text-[10px] text-text-slate tracking-widest uppercase"
+              >19.0178° N, 72.8478° E</span
+            >
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Success Feedback Overlay -->
+    <div
+      id="toast"
+      class="hidden fixed inset-x-0 bottom-10 flex justify-center z-[1000] px-4"
+    >
+      <div
+        id="toast-body"
+        class="px-8 py-4 rounded-full shadow-2xl font-bold flex items-center gap-3 text-white transition-all transform animate-bounce"
+      >
+        <i id="toast-icon" class="fas fa-check-circle"></i>
+        <span id="toast-text">Message Sent</span>
+      </div>
+    </div>
+
+    <script>
+      function sendAlert(message) {
+        const toast = document.getElementById("toast");
+        const body = document.getElementById("toast-body");
+        const text = document.getElementById("toast-text");
+        const icon = document.getElementById("toast-icon");
+
+        const isDanger = message.includes("unsafe");
+
+        text.innerText = isDanger
+          ? "CRITICAL ALERT BROADCASTED"
+          : "SAFETY STATUS SHARED";
+        body.style.backgroundColor = isDanger ? "#F85149" : "#3FB950";
+        icon.className = isDanger ? "fas fa-warning" : "fas fa-check-circle";
+
+        toast.classList.remove("hidden");
+
+        // Console log simulation
+        console.log(
+          `SOS LOG: ${message} | Timestamp: ${new Date().toISOString()}`
+        );
+
+        setTimeout(() => {
+          toast.classList.add("hidden");
+        }, 3000);
+      }
+    </script>
+  </body>
+</html>

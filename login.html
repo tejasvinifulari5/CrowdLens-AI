@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>User Login - CrowdLens AI</title>
+
+    <!-- Fonts -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Tailwind -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              primary: "#135bec",
+              "primary-hover": "#0f4bc4",
+              "background-light": "#f6f6f8",
+              "background-dark": "#101622",
+              "card-dark": "#192233",
+              "border-dark": "#324467",
+              "input-dark": "#212b40",
+            },
+            fontFamily: {
+              display: ["Inter", "sans-serif"],
+            },
+            borderRadius: {
+              DEFAULT: "0.25rem",
+              lg: "0.5rem",
+              xl: "0.75rem",
+              "2xl": "1rem",
+              full: "9999px",
+            },
+          },
+        },
+      };
+    </script>
+
+    <style>
+      body {
+        min-height: max(884px, 100dvh);
+      }
+
+      ::-webkit-scrollbar {
+        width: 0px;
+        background: transparent;
+      }
+    </style>
+  </head>
+  <script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyB7FhvYdKw6kqqo66KwSlUHbGVrcr7Z5Sw",
+    authDomain: "crowdlens-ai.firebaseapp.com",
+    projectId: "crowdlens-ai",
+    storageBucket: "crowdlens-ai.firebasestorage.app",
+    messagingSenderId: "804844724116",
+    appId: "1:804844724116:web:e6c5c656c529c4edbd7981"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+
+  const form = document.querySelector("form");
+
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+
+    signInWithEmailAndPassword(auth, email, password)
+      .then(() => {
+        window.location.href = "home.html";
+      })
+      .catch((error) => {
+        alert(error.message);
+      });
+  });
+</script>
+
+
+  <body
+    class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white font-display antialiased selection:bg-primary selection:text-white"
+  >
+    <div
+      class="relative flex min-h-screen w-full max-w-md mx-auto flex-col items-center justify-center overflow-hidden p-6 sm:p-8 shadow-2xl"
+    >
+      <!-- Header -->
+      <div class="flex flex-col items-center gap-6 mb-8 w-full">
+        <div
+          class="flex h-20 w-20 items-center justify-center rounded-2xl bg-primary text-white shadow-xl shadow-primary/30 ring-1 ring-white/10 dark:ring-white/5"
+        >
+          <span class="material-symbols-outlined text-[44px]">radar</span>
+        </div>
+
+        <div class="text-center space-y-2">
+          <h1 class="text-3xl font-bold tracking-tight">Welcome Back</h1>
+          <p class="text-sm text-slate-500 dark:text-slate-400">
+            Sign in to continue monitoring real-time safety.
+          </p>
+        </div>
+      </div>
+
+      <!-- Form -->
+      <form class="w-full space-y-5" method="POST">
+        <div class="space-y-4">
+          <!-- Email -->
+          <div class="space-y-1.5">
+            <label
+              for="email"
+              class="block text-sm font-medium text-slate-700 dark:text-slate-300"
+            >
+              Email address
+            </label>
+            <div class="relative">
+              <span
+                class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[20px]"
+              >
+                mail
+              </span>
+              <input
+                id="email"
+                name="email"
+                type="email"
+                required
+                placeholder="you@example.com"
+                class="w-full rounded-xl border-slate-200 dark:border-border-dark bg-white dark:bg-input-dark pl-10 pr-3 py-3 text-sm shadow-sm focus:border-primary focus:ring-primary dark:text-white"
+              />
+            </div>
+          </div>
+
+          <!-- Password -->
+          <div class="space-y-1.5">
+            <label
+              for="password"
+              class="block text-sm font-medium text-slate-700 dark:text-slate-300"
+            >
+              Password
+            </label>
+            <div class="relative">
+              <span
+                class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[20px]"
+              >
+                lock
+              </span>
+              <input
+                id="password"
+                name="password"
+                type="password"
+                required
+                placeholder="••••••••"
+                class="w-full rounded-xl border-slate-200 dark:border-border-dark bg-white dark:bg-input-dark pl-10 pr-3 py-3 text-sm shadow-sm focus:border-primary focus:ring-primary dark:text-white"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div class="flex justify-end">
+          <a
+            href="#"
+            class="text-sm font-medium text-primary hover:text-primary-hover transition"
+          >
+            Forgot password?
+          </a>
+        </div>
+
+        <button
+          type="submit"
+          class="w-full rounded-xl bg-primary py-3.5 text-sm font-semibold text-white shadow-lg shadow-primary/30 hover:bg-primary-hover transition active:scale-[0.98]"
+        >
+          Sign in
+        </button>
+      </form>
+
+      <!-- Footer -->
+      <div class="mt-8 text-center text-sm text-slate-500 dark:text-slate-400">
+        Don’t have an account?
+        <a
+          href="registration.html"
+          class="ml-1 font-semibold text-primary hover:text-primary-hover"
+        >
+          Create account
+        </a>
+      </div>
+    </div>
+  </body>
+</html>

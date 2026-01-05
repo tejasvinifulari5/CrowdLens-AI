@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Welcome to CrowdLens AI</title>
+
+    <!-- Fonts -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Tailwind -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              primary: "#135bec",
+              "background-light": "#f6f6f8",
+              "background-dark": "#101622",
+              "card-dark": "#192233",
+              "border-dark": "#324467",
+            },
+            fontFamily: {
+              display: ["Inter", "sans-serif"],
+            },
+            borderRadius: {
+              DEFAULT: "0.25rem",
+              lg: "0.5rem",
+              xl: "0.75rem",
+              "2xl": "1rem",
+              full: "9999px",
+            },
+          },
+        },
+      };
+    </script>
+
+    <style>
+      body {
+        min-height: max(884px, 100dvh);
+      }
+    </style>
+  </head>
+
+  <body
+    class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white font-display antialiased selection:bg-primary selection:text-white"
+  >
+    <div
+      class="relative flex min-h-screen w-full max-w-md mx-auto flex-col items-center justify-center overflow-hidden p-6 shadow-2xl"
+    >
+      <div class="flex flex-col items-center gap-6 text-center">
+        <!-- App Icon -->
+        <div
+          class="flex h-24 w-24 items-center justify-center rounded-3xl bg-primary text-white shadow-2xl shadow-primary/40 ring-1 ring-white/10 dark:ring-white/5"
+        >
+          <span class="material-symbols-outlined text-[56px]">radar</span>
+        </div>
+
+        <!-- Title -->
+        <h1 class="text-3xl font-bold tracking-tight">CrowdLens AI</h1>
+
+        <!-- Subtitle -->
+        <p class="text-sm text-slate-600 dark:text-slate-400 max-w-xs">
+          Real-time crowd intelligence & women safety prediction
+        </p>
+
+        <!-- CTA (optional but recommended) -->
+        <a
+          href="registration.html"
+          className="mt-4 inline-block rounded-xl bg-primary px-6 py-2 text-sm font-semibold text-white hover:bg-primary/90 transition"
+        >
+          Get Started
+        </a>
+      </div>
+    </div>
+  </body>
+</html>

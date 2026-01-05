@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CrowdLens | Operations Center</title>
+    <script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+  const firebaseConfig = { /* same config */ };
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+
+  onAuthStateChanged(auth, (user) => {
+    if (!user) {
+      window.location.href = "login.html";
+    }
+  });
+</script>
+
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              primary: "#135BEC",
+              "primary-hover": "#0F4BC4",
+              "background-dark": "#101622",
+              "card-dark": "#192233",
+              "input-dark": "#212B40",
+              "border-dark": "#324467",
+              "text-white": "#E0E7FF",
+              "text-slate": "#A0AEC0",
+              "accent-green": "#10B981",
+              "accent-yellow": "#FACC15",
+              "accent-red": "#EF4444",
+              "accent-blue": "#3FA9F5",
+              "accent-purple": "#8B5CF6",
+            },
+          },
+        },
+      };
+    </script>
+
+    <!-- FontAwesome & Maps -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap");
+
+      body {
+        font-family: "Plus Jakarta Sans", sans-serif;
+        background-color: #101622;
+        color: #e0e7ff;
+        overflow-x: hidden;
+      }
+
+      .mono-font {
+        font-family: "JetBrains Mono", monospace;
+      }
+
+      /* Custom Leaflet Dark Theme */
+      .leaflet-container {
+        background: #101622 !important;
+        outline: none;
+      }
+      .leaflet-tile-pane {
+        filter: brightness(0.6) invert(1) contrast(3) hue-rotate(200deg)
+          saturate(0.3) !important;
+      }
+
+      #map-container {
+        height: 550px;
+        width: 100%;
+        border-radius: 1.25rem;
+        overflow: hidden;
+        border: 1px solid #324467;
+        position: relative;
+      }
+
+      #map {
+        height: 100%;
+        width: 100%;
+        z-index: 1;
+      }
+
+      .chart-container {
+        position: relative;
+        width: 100%;
+        height: 300px;
+      }
+
+      .vision-overlay {
+        background: linear-gradient(
+          to bottom,
+          rgba(19, 91, 236, 0) 0%,
+          rgba(19, 91, 236, 0.05) 50%,
+          rgba(19, 91, 236, 0) 100%
+        );
+        background-size: 100% 40px;
+        animation: scanline 4s linear infinite;
+        pointer-events: none;
+      }
+
+      @keyframes scanline {
+        0% {
+          background-position: 0 0;
+        }
+        100% {
+          background-position: 0 100%;
+        }
+      }
+
+      .active-ring {
+        box-shadow: 0 0 0 2px #135bec;
+      }
+
+      .map-pulse {
+        width: 20px;
+        height: 20px;
+        background: #135bec;
+        border: 2px solid white;
+        border-radius: 50%;
+        box-shadow: 0 0 15px rgba(19, 91, 236, 0.8);
+        animation: pulse-ring 1.5s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+      }
+
+      @keyframes pulse-ring {
+        0% {
+          transform: scale(0.33);
+          opacity: 1;
+        }
+        80%,
+        100% {
+          transform: scale(2);
+          opacity: 0;
+        }
+      }
+
+      ::-webkit-scrollbar {
+        width: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #101622;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #324467;
+        border-radius: 4px;
+      }
+    </style>
+  </head>
+  <body class="p-4 lg:p-8 min-h-screen flex flex-col gap-6">
+    <!-- Header Section -->
+    <header
+      class="flex flex-col md:flex-row justify-between items-start md:items-center bg-card-dark p-6 rounded-2xl border border-border-dark shadow-2xl"
+    >
+      <div class="flex items-center gap-6">
+        <div>
+          <div class="flex items-center gap-3 mb-2">
+            <div class="flex gap-1.5">
+              <div
+                class="w-2 h-2 bg-accent-green rounded-full animate-pulse"
+              ></div>
+              <div class="w-2 h-2 bg-accent-blue rounded-full"></div>
+            </div>
+            <span
+              class="text-[10px] font-bold text-text-slate tracking-widest uppercase"
+              >System Core / Active Operations</span
+            >
+          </div>
+          <h1 class="text-3xl font-extrabold tracking-tight text-white">
+            CROWDLENS AI
+          </h1>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-6 mt-4 md:mt-0">
+        <!-- Clock -->
+        <div class="hidden md:block text-right">
+          <p
+            class="text-xs text-text-slate uppercase font-bold tracking-tighter"
+          >
+            Current Time
+          </p>
+          <p id="clock" class="text-lg font-mono text-accent-blue">00:00:00</p>
+        </div>
+
+        <div class="h-10 w-[1px] bg-border-dark hidden md:block"></div>
+
+        <!-- Actions & Profile -->
+
+        <div class="flex items-center gap-4">
+          <a href="emerg.html">
+            <button
+              class="bg-primary hover:bg-primary-hover text-white px-5 py-2.5 rounded-xl font-bold transition-all flex items-center gap-2 shadow-lg shadow-primary/20"
+            >
+              <i class="fas fa-shield-halved"></i>
+              <span class="hidden sm:inline">Emergency</span>
+            </button></a
+          >
+
+          <!-- Profile Icon (Simplified) -->
+          <a href="user.html" class="relative group">
+            <div
+              class="w-11 h-11 rounded-xl bg-input-dark border border-border-dark flex items-center justify-center text-text-white transition-all overflow-hidden group-hover:border-primary"
+            >
+              <i class="fas fa-user-shield text-lg"></i>
+            </div>
+            <div
+              class="absolute -top-1 -right-1 w-3.5 h-3.5 bg-accent-red border-2 border-card-dark rounded-full"
+            ></div>
+          </a>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Operational Grid -->
+    <main class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <!-- Sidebar Navigation & Control -->
+      <div class="lg:col-span-3 flex flex-col gap-6">
+        <section
+          class="bg-card-dark p-6 rounded-2xl border border-border-dark shadow-xl"
+        >
+          <h2
+            class="text-xs font-bold text-text-slate uppercase tracking-widest mb-6 flex items-center gap-2"
+          >
+            <i class="fas fa-location-crosshairs text-primary"></i> Monitoring
+            Zones
+          </h2>
+
+          <div class="space-y-4">
+            <button
+              onclick="loadLocation('dadar')"
+              id="btn-dadar"
+              class="w-full text-left p-4 rounded-xl border border-border-dark hover:border-primary bg-input-dark transition-all group relative overflow-hidden"
+            >
+              <div class="flex justify-between items-start relative z-10">
+                <div>
+                  <span
+                    class="block font-bold text-white group-hover:text-primary transition-colors"
+                    >Dadar Junction</span
+                  >
+                  <span class="text-[10px] text-text-slate uppercase font-bold"
+                    >Transit Hub B-01</span
+                  >
+                </div>
+                <i
+                  class="fas fa-chevron-right text-xs text-border-dark group-hover:text-primary mt-1"
+                ></i>
+              </div>
+            </button>
+
+            <button
+              onclick="loadLocation('marine')"
+              id="btn-marine"
+              class="w-full text-left p-4 rounded-xl border border-border-dark hover:border-primary bg-input-dark transition-all group relative overflow-hidden"
+            >
+              <div class="flex justify-between items-start relative z-10">
+                <div>
+                  <span
+                    class="block font-bold text-white group-hover:text-primary transition-colors"
+                    >Marine Promenade</span
+                  >
+                  <span class="text-[10px] text-text-slate uppercase font-bold"
+                    >Public Domain C-04</span
+                  >
+                </div>
+                <i
+                  class="fas fa-chevron-right text-xs text-border-dark group-hover:text-primary mt-1"
+                ></i>
+              </div>
+            </button>
+
+            <button
+              onclick="loadLocation('juhu')"
+              id="btn-juhu"
+              class="w-full text-left p-4 rounded-xl border border-border-dark hover:border-primary bg-input-dark transition-all group relative overflow-hidden"
+            >
+              <div class="flex justify-between items-start relative z-10">
+                <div>
+                  <span
+                    class="block font-bold text-white group-hover:text-primary transition-colors"
+                    >Juhu Waterfront</span
+                  >
+                  <span class="text-[10px] text-text-slate uppercase font-bold"
+                    >Extreme Density S-09</span
+                  >
+                </div>
+                <i
+                  class="fas fa-chevron-right text-xs text-border-dark group-hover:text-primary mt-1"
+                ></i>
+              </div>
+            </button>
+          </div>
+        </section>
+
+        <!-- Quick Stats Summary -->
+        <section
+          class="bg-card-dark p-6 rounded-2xl border border-border-dark flex-grow"
+        >
+          <h2
+            class="text-xs font-bold text-text-slate uppercase tracking-widest mb-6"
+          >
+            Regional Metrics
+          </h2>
+          <div class="space-y-6">
+            <div>
+              <div class="flex justify-between text-xs mb-2">
+                <span class="text-text-slate">System Latency</span>
+                <span class="text-accent-green font-mono">14ms</span>
+              </div>
+              <div class="w-full bg-input-dark h-1.5 rounded-full">
+                <div class="bg-accent-green w-[92%] h-full rounded-full"></div>
+              </div>
+            </div>
+            <div>
+              <div class="flex justify-between text-xs mb-2">
+                <span class="text-text-slate">Data Integrity</span>
+                <span class="text-accent-blue font-mono">99.8%</span>
+              </div>
+              <div class="w-full bg-input-dark h-1.5 rounded-full">
+                <div class="bg-accent-blue w-[99%] h-full rounded-full"></div>
+              </div>
+            </div>
+            <div
+              class="p-4 bg-input-dark rounded-xl border border-border-dark mt-4"
+            >
+              <p class="text-[10px] text-text-slate uppercase font-bold mb-1">
+                Last AI Re-training
+              </p>
+              <p class="text-sm font-semibold text-text-white">Jan 04, 2026</p>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- Central Visualization Hub -->
+      <div class="lg:col-span-9 flex flex-col gap-6">
+        <!-- Map and Overlays -->
+        <div id="map-container">
+          <div id="map"></div>
+
+          <div
+            class="absolute bottom-6 left-6 right-6 grid grid-cols-2 md:grid-cols-4 gap-4 z-[500] pointer-events-none"
+          >
+            <div
+              class="bg-card-dark/90 backdrop-blur-md p-4 rounded-xl border border-border-dark shadow-2xl pointer-events-auto"
+            >
+              <p class="text-[10px] text-text-slate uppercase font-bold mb-1">
+                Live Count
+              </p>
+              <p
+                id="stat-count"
+                class="text-2xl font-mono font-bold text-white"
+              >
+                0
+              </p>
+            </div>
+            <div
+              class="bg-card-dark/90 backdrop-blur-md p-4 rounded-xl border border-border-dark shadow-2xl pointer-events-auto"
+            >
+              <p class="text-[10px] text-text-slate uppercase font-bold mb-1">
+                Density Index
+              </p>
+              <p
+                id="stat-density"
+                class="text-2xl font-mono font-bold text-accent-blue"
+              >
+                0.0
+              </p>
+            </div>
+            <div
+              class="bg-card-dark/90 backdrop-blur-md p-4 rounded-xl border border-border-dark shadow-2xl pointer-events-auto"
+            >
+              <p class="text-[10px] text-text-slate uppercase font-bold mb-1">
+                Safety Level
+              </p>
+              <p id="status-text" class="text-lg font-bold">Monitoring...</p>
+            </div>
+            <div
+              class="bg-card-dark/90 backdrop-blur-md p-4 rounded-xl border border-border-dark shadow-2xl pointer-events-auto"
+            >
+              <p class="text-[10px] text-text-slate uppercase font-bold mb-1">
+                Trend
+              </p>
+              <p id="trend-val" class="text-lg font-bold text-accent-green">
+                Stable
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bottom Analytics Row -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- Vision Simulation -->
+          <section
+            class="bg-card-dark rounded-2xl border border-border-dark overflow-hidden relative shadow-xl"
+          >
+            <div class="vision-overlay absolute inset-0 z-0"></div>
+            <div class="p-6 relative z-10">
+              <div class="flex justify-between items-center mb-6">
+                <h3 class="font-bold text-text-white flex items-center gap-2">
+                  <i class="fas fa-microchip text-primary"></i> Neural Engine
+                  Feed
+                </h3>
+                <span
+                  class="text-[10px] font-mono text-primary bg-primary/10 px-2 py-0.5 rounded border border-primary/20"
+                  >4K_STREAM_A1</span
+                >
+              </div>
+              <div
+                class="h-44 bg-background-dark/80 rounded-xl border border-border-dark relative overflow-hidden"
+                id="detection-viz"
+              ></div>
+            </div>
+          </section>
+
+          <!-- Forecast Chart -->
+          <section
+            class="bg-card-dark p-6 rounded-2xl border border-border-dark shadow-xl"
+          >
+            <div class="flex justify-between items-center mb-6">
+              <h3 class="font-bold text-text-white">Density Projection</h3>
+              <div class="flex gap-2">
+                <div class="w-2 h-2 rounded-full bg-primary"></div>
+                <div class="w-2 h-2 rounded-full bg-border-dark"></div>
+              </div>
+            </div>
+            <div class="chart-container">
+              <canvas id="trendChart"></canvas>
+            </div>
+          </section>
+        </div>
+      </div>
+    </main>
+
+    <footer
+      class="mt-auto py-6 flex flex-col md:flex-row justify-between items-center gap-4 text-text-slate text-[10px] font-bold uppercase tracking-widest border-t border-border-dark"
+    >
+      <p>&copy; 2026 CrowdLens Infrastructure Group</p>
+      <div class="flex gap-6">
+        <span class="flex items-center gap-2"
+          ><div class="w-1.5 h-1.5 bg-accent-green rounded-full"></div>
+          All Nodes Operating</span
+        >
+        <span class="hover:text-primary cursor-pointer transition-colors"
+          >Documentation</span
+        >
+        <span class="hover:text-primary cursor-pointer transition-colors"
+          >API Endpoint</span
+        >
+      </div>
+    </footer>
+
+    <script>
+      const locations = {
+        dadar: {
+          name: "Dadar Junction",
+          coords: [19.0178, 72.8478],
+          base: { count: 850, density: 1.4 },
+          forecast: [60, 65, 80, 85, 82, 90, 95],
+        },
+        marine: {
+          name: "Marine Promenade",
+          coords: [18.9438, 72.8231],
+          base: { count: 310, density: 0.5 },
+          forecast: [30, 32, 31, 28, 35, 33, 30],
+        },
+        juhu: {
+          name: "Juhu Waterfront",
+          coords: [19.105, 72.8265],
+          base: { count: 1400, density: 3.2 },
+          forecast: [95, 90, 85, 70, 60, 50, 40],
+        },
+      };
+
+      let map,
+        trendChart,
+        activeId = "dadar",
+        activeMarker;
+
+      window.onload = () => {
+        initMap();
+        initChart();
+        loadLocation("dadar");
+        startClock();
+        setInterval(runInference, 2000);
+      };
+
+      function startClock() {
+        setInterval(() => {
+          document.getElementById("clock").innerText =
+            new Date().toLocaleTimeString("en-GB");
+        }, 1000);
+      }
+
+      function initMap() {
+        map = L.map("map", {
+          zoomControl: false,
+          attributionControl: false,
+          scrollWheelZoom: false,
+        }).setView(locations.dadar.coords, 16);
+
+        L.tileLayer(
+          "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+        ).addTo(map);
+      }
+
+      function initChart() {
+        const ctx = document.getElementById("trendChart").getContext("2d");
+        trendChart = new Chart(ctx, {
+          type: "line",
+          data: {
+            labels: ["T-30", "T-20", "T-10", "LIVE", "T+10", "T+20", "T+30"],
+            datasets: [
+              {
+                data: [0, 0, 0, 0, 0, 0, 0],
+                borderColor: "#135BEC",
+                backgroundColor: "rgba(19, 91, 236, 0.1)",
+                borderWidth: 3,
+                tension: 0.4,
+                fill: true,
+                pointRadius: 0,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+              y: {
+                grid: { color: "#324467" },
+                ticks: { color: "#A0AEC0", font: { size: 10 } },
+                border: { display: false },
+              },
+              x: {
+                grid: { display: false },
+                ticks: { color: "#A0AEC0", font: { size: 10 } },
+              },
+            },
+          },
+        });
+      }
+
+      function loadLocation(id) {
+        activeId = id;
+        const loc = locations[id];
+
+        document
+          .querySelectorAll('button[id^="btn-"]')
+          .forEach((b) => b.classList.remove("active-ring", "border-primary"));
+        document
+          .getElementById(`btn-${id}`)
+          .classList.add("active-ring", "border-primary");
+
+        map.flyTo(loc.coords, 16, { duration: 1.5 });
+
+        if (activeMarker) map.removeLayer(activeMarker);
+        const pulseIcon = L.divIcon({
+          className: "custom-div-icon",
+          html: `<div class="map-pulse" style="background: ${
+            loc.base.density > 2.0
+              ? "#EF4444"
+              : loc.base.density > 1.0
+              ? "#FACC15"
+              : "#135BEC"
+          }"></div>`,
+          iconSize: [20, 20],
+          iconAnchor: [10, 10],
+        });
+        activeMarker = L.marker(loc.coords, { icon: pulseIcon }).addTo(map);
+
+        trendChart.data.datasets[0].data = loc.forecast;
+        trendChart.update();
+
+        runInference();
+      }
+
+      function runInference() {
+        const loc = locations[activeId];
+        const jitter = Math.floor(Math.random() * 40) - 20;
+        const count = loc.base.count + jitter;
+        const density = (loc.base.density + jitter / 500).toFixed(2);
+
+        document.getElementById("stat-count").innerText =
+          count.toLocaleString();
+        document.getElementById("stat-density").innerText = density;
+
+        const statusEl = document.getElementById("status-text");
+        const trendEl = document.getElementById("trend-val");
+
+        if (density > 2.0) {
+          statusEl.innerText = "CRITICAL";
+          statusEl.className = "text-lg font-bold text-accent-red";
+          trendEl.innerText = "SURGING";
+          trendEl.className = "text-lg font-bold text-accent-red";
+        } else if (density > 1.0) {
+          statusEl.innerText = "ELEVATED";
+          statusEl.className = "text-lg font-bold text-accent-yellow";
+          trendEl.innerText = "STABLE";
+          trendEl.className = "text-lg font-bold text-accent-yellow";
+        } else {
+          statusEl.innerText = "OPTIMAL";
+          statusEl.className = "text-lg font-bold text-accent-green";
+          trendEl.innerText = "CLEARING";
+          trendEl.className = "text-lg font-bold text-accent-green";
+        }
+
+        const viz = document.getElementById("detection-viz");
+        viz.innerHTML = "";
+        const dots = Math.min(60, Math.floor(count / 15));
+        for (let i = 0; i < dots; i++) {
+          const dot = document.createElement("div");
+          dot.className =
+            "absolute w-1.5 h-1.5 rounded-full bg-primary opacity-60";
+          dot.style.top = Math.random() * 100 + "%";
+          dot.style.left = Math.random() * 100 + "%";
+          viz.appendChild(dot);
+        }
+      }
+    </script>
+  </body>
+</html>
