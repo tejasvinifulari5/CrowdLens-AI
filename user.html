@@ -36,10 +36,31 @@
         background-color: #101622;
         color: #e0e7ff;
       }
+      .edit-mode .view-only {
+        display: none;
+      }
+      .view-mode .edit-only {
+        display: none;
+      }
+
+      input,
+      textarea {
+        background: #212b40;
+        border: 1px solid #324467;
+        border-radius: 0.5rem;
+        padding: 0.5rem;
+        width: 100%;
+        color: white;
+        outline: none;
+      }
+      input:focus {
+        border-color: #135bec;
+      }
     </style>
   </head>
   <body
-    class="p-4 lg:p-8 min-h-screen flex flex-col items-center justify-center"
+    class="p-4 lg:p-8 min-h-screen flex flex-col items-center justify-center view-mode"
+    id="profileBody"
   >
     <main class="max-w-4xl mx-auto w-full">
       <div
@@ -66,15 +87,46 @@
               <i class="fas fa-user-shield"></i>
             </div>
             <div class="flex-grow mb-2">
-              <h2 class="text-3xl font-extrabold text-white">
+              <h2
+                class="text-3xl font-extrabold text-white view-only"
+                id="display-name-header"
+              >
                 Julian Sterling
               </h2>
+              <div class="edit-only">
+                <label class="text-[10px] text-text-slate uppercase font-bold"
+                  >Profile Name</label
+                >
+                <input
+                  type="text"
+                  id="input-name-header"
+                  value="Julian Sterling"
+                  class="text-xl font-bold"
+                />
+              </div>
             </div>
+
+            <!-- Toggle Buttons -->
             <button
-              class="bg-input-dark border border-border-dark text-text-white px-6 py-2.5 rounded-xl font-bold hover:border-primary transition-all text-sm mb-2"
+              onclick="toggleEdit()"
+              class="view-only bg-input-dark border border-border-dark text-text-white px-6 py-2.5 rounded-xl font-bold hover:border-primary transition-all text-sm mb-2"
             >
-              Edit Profile
+              <i class="fas fa-edit mr-2"></i>Edit Profile
             </button>
+            <div class="edit-only flex gap-2 mb-2">
+              <button
+                onclick="saveProfile()"
+                class="bg-primary text-white px-6 py-2.5 rounded-xl font-bold hover:bg-blue-600 transition-all text-sm"
+              >
+                Save Changes
+              </button>
+              <button
+                onclick="toggleEdit()"
+                class="bg-transparent border border-border-dark text-text-slate px-6 py-2.5 rounded-xl font-bold hover:text-white transition-all text-sm"
+              >
+                Cancel
+              </button>
+            </div>
           </div>
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-12">
@@ -90,46 +142,98 @@
                   <p class="text-[10px] text-text-slate uppercase font-bold">
                     Full Name
                   </p>
-                  <p class="text-white font-semibold">Julian Sterling</p>
+                  <p class="text-white font-semibold view-only" id="val-name">
+                    Julian Sterling
+                  </p>
+                  <input
+                    type="text"
+                    id="edit-name"
+                    value="Julian Sterling"
+                    class="edit-only"
+                  />
                 </div>
                 <div>
                   <p class="text-[10px] text-text-slate uppercase font-bold">
                     Age
                   </p>
-                  <p class="text-white font-semibold">34 Years</p>
+                  <p class="text-white font-semibold view-only" id="val-age">
+                    34 Years
+                  </p>
+                  <input
+                    type="text"
+                    id="edit-age"
+                    value="34 Years"
+                    class="edit-only"
+                  />
                 </div>
                 <div>
                   <p class="text-[10px] text-text-slate uppercase font-bold">
                     Employee ID
                   </p>
                   <p class="text-white font-mono">CL-7704-ALPHA</p>
+                  <p class="text-[8px] text-accent-blue edit-only italic">
+                    Read-only system ID
+                  </p>
                 </div>
                 <div>
                   <p class="text-[10px] text-text-slate uppercase font-bold">
                     Work Place
                   </p>
-                  <p class="text-white font-semibold">CrowdLens HQ - Tower A</p>
+                  <p class="text-white font-semibold view-only" id="val-work">
+                    CrowdLens HQ - Tower A
+                  </p>
+                  <input
+                    type="text"
+                    id="edit-work"
+                    value="CrowdLens HQ - Tower A"
+                    class="edit-only"
+                  />
                 </div>
                 <div>
                   <p class="text-[10px] text-text-slate uppercase font-bold">
                     Department
                   </p>
-                  <p class="text-white font-semibold">Urban Infrastructure</p>
+                  <p class="text-white font-semibold view-only" id="val-dept">
+                    Urban Infrastructure
+                  </p>
+                  <select
+                    id="edit-dept"
+                    class="edit-only bg-input-dark border border-border-dark rounded-lg p-2 w-full text-white outline-none"
+                  >
+                    <option>Urban Infrastructure</option>
+                    <option>Emergency Response</option>
+                    <option>Public Relations</option>
+                    <option>Data Intelligence</option>
+                  </select>
                 </div>
                 <div>
                   <p class="text-[10px] text-text-slate uppercase font-bold">
                     Access Node
                   </p>
-                  <p class="text-white font-semibold">Mumbai-Central-01</p>
+                  <p class="text-white font-semibold view-only" id="val-node">
+                    Mumbai-Central-01
+                  </p>
+                  <input
+                    type="text"
+                    id="edit-node"
+                    value="Mumbai-Central-01"
+                    class="edit-only"
+                  />
                 </div>
                 <div class="sm:col-span-2">
                   <p class="text-[10px] text-text-slate uppercase font-bold">
                     Home Address
                   </p>
-                  <p class="text-white font-semibold">
+                  <p
+                    class="text-white font-semibold view-only"
+                    id="val-address"
+                  >
                     Suite 402, Skyline Residency, Worli Sea Face, Mumbai, MH
                     400018
                   </p>
+                  <textarea id="edit-address" rows="2" class="edit-only">
+Suite 402, Skyline Residency, Worli Sea Face, Mumbai, MH 400018</textarea
+                  >
                 </div>
               </div>
             </div>
@@ -166,6 +270,9 @@
                   >
                   <i class="fas fa-lock text-text-slate text-xs"></i>
                 </div>
+                <p class="text-[9px] text-text-slate italic mt-2">
+                  * Clearance levels are managed by System Administrators.
+                </p>
               </div>
             </div>
           </div>
@@ -190,5 +297,39 @@
         </div>
       </div>
     </main>
+
+    <script>
+      function toggleEdit() {
+        const body = document.getElementById("profileBody");
+        body.classList.toggle("view-mode");
+        body.classList.toggle("edit-mode");
+      }
+
+      function saveProfile() {
+        // Update Headers
+        document.getElementById("display-name-header").innerText =
+          document.getElementById("input-name-header").value;
+
+        // Update Details
+        document.getElementById("val-name").innerText =
+          document.getElementById("edit-name").value;
+        document.getElementById("val-age").innerText =
+          document.getElementById("edit-age").value;
+        document.getElementById("val-work").innerText =
+          document.getElementById("edit-work").value;
+        document.getElementById("val-dept").innerText =
+          document.getElementById("edit-dept").value;
+        document.getElementById("val-node").innerText =
+          document.getElementById("edit-node").value;
+        document.getElementById("val-address").innerText =
+          document.getElementById("edit-address").value;
+
+        // Optional: Log to simulate an API call
+        console.log("Profile updated successfully!");
+
+        // Switch back to view mode
+        toggleEdit();
+      }
+    </script>
   </body>
 </html>
