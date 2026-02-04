@@ -4,6 +4,9 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>CrowdLens | Operations Center</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd"></script>
+
     <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
   import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
@@ -422,10 +425,31 @@
                   >4K_STREAM_A1</span
                 >
               </div>
-              <div
-                class="h-44 bg-background-dark/80 rounded-xl border border-border-dark relative overflow-hidden"
-                id="detection-viz"
-              ></div>
+              <div class="space-y-3">
+  <h2 class="text-sm font-bold text-text-slate uppercase tracking-widest">
+    Live Crowd Detection
+  </h2>
+
+  <video
+    id="video"
+    autoplay
+    muted
+    class="w-full h-44 object-cover rounded-xl border border-border-dark"
+  ></video>
+
+  <div class="flex justify-between text-sm font-mono">
+    <span id="count">People Detected: 0</span>
+    <span id="risk" class="text-accent-green">Risk Level: Low</span>
+  </div>
+
+  <button
+    onclick="startDetection()"
+    class="w-full bg-primary hover:bg-primary-hover text-white py-2 rounded-xl font-bold transition-all"
+  >
+    Start Detection
+  </button>
+</div>
+
             </div>
           </section>
 
@@ -634,5 +658,45 @@
         }
       }
     </script>
+    <script>
+  let model;
+  let detecting = false;
+
+  async function startDetection() {
+    if (detecting) return;
+    detecting = true;
+
+    const video = document.getElementById("video");
+    const countEl = document.getElementById("count");
+    const riskEl = document.getElementById("risk");
+
+    model = await cocoSsd.load();
+
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: true,
+    });
+    video.srcObject = stream;
+
+    setInterval(async () => {
+      const predictions = await model.detect(video);
+      const people = predictions.filter(p => p.class === "person");
+      const count = people.length;
+
+      countEl.innerText = "People Detected: " + count;
+
+      if (count < 10) {
+        riskEl.innerText = "Risk Level: Low";
+        riskEl.className = "text-accent-green";
+      } else if (count < 25) {
+        riskEl.innerText = "Risk Level: Medium";
+        riskEl.className = "text-accent-yellow";
+      } else {
+        riskEl.innerText = "Risk Level: High";
+        riskEl.className = "text-accent-red";
+      }
+    }, 2000);
+  }
+</script>
+
   </body>
 </html>
